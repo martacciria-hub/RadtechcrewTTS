@@ -34,29 +34,29 @@ jobs:
           text = '''Vale, venga. Tema 35. Y este es de los que al principio parecen una colección de palabras rarísimas, pero en cuanto entiendes cómo funciona el equipo, todo empieza a encajar. La ecografía utiliza ondas mecánicas y los transductores son los encargados de generarlas y recibirlas. El efecto piezoeléctrico permite transformar energía eléctrica en vibración mecánica y, a la inversa, convertir los ecos recibidos en señal eléctrica. A partir de ahí entran en juego conceptos como frecuencia, longitud de onda, amplitud, potencia, intensidad, impedancia acústica y reflexión. Y sí, parece mucha teoría, pero la idea es bastante lógica: mandamos una onda, esperamos a que vuelva, medimos lo que ha pasado y construimos la imagen.'''
 
           tts = TTS(auto_download=True)
-          style = tts.get_voice_style(voice_name='F1')
 
-          for speed, label in ((1.25, '125'), (1.30, '130')):
+          for voice, label in (('F2', 'f2'), ('M1', 'm1')):
+              style = tts.get_voice_style(voice_name=voice)
               wav, duration = tts.synthesize(
                   text=text,
                   lang='es',
                   voice_style=style,
                   total_steps=10,
-                  speed=speed,
+                  speed=1.25,
               )
               audio = np.asarray(wav[0], dtype=np.float32)
               audio = np.clip(audio, -1.0, 1.0)
-              stem = f'/tmp/tema35-supertonic-f1-{label}'
+              stem = f'/tmp/tema35-supertonic-{label}-125'
               write(stem + '.wav', 44100, (audio * 32767).astype(np.int16))
-              print(f'speed={speed} duration_seconds=', float(duration[0]))
+              print(f'voice={voice} speed=1.25 duration_seconds=', float(duration[0]))
           PY
           python /tmp/generate_tts.py
-          ffmpeg -y -i /tmp/tema35-supertonic-f1-125.wav -codec:a libmp3lame -q:a 3 /tmp/tema35-supertonic-f1-125.mp3
-          ffmpeg -y -i /tmp/tema35-supertonic-f1-130.wav -codec:a libmp3lame -q:a 3 /tmp/tema35-supertonic-f1-130.mp3
+          ffmpeg -y -i /tmp/tema35-supertonic-f2-125.wav -codec:a libmp3lame -q:a 3 /tmp/tema35-supertonic-f2-125.mp3
+          ffmpeg -y -i /tmp/tema35-supertonic-m1-125.wav -codec:a libmp3lame -q:a 3 /tmp/tema35-supertonic-m1-125.mp3
 
       - name: Upload samples
         uses: actions/upload-artifact@v4
         with:
-          name: tema35-supertonic-f1-speeds
-          path: /tmp/tema35-supertonic-f1-*.mp3
+          name: tema35-supertonic-f2-m1-125
+          path: /tmp/tema35-supertonic-*-125.mp3
           retention-days: 7
