@@ -1,0 +1,56 @@
+name: TTS Supertonic test
+
+on:
+  push:
+    branches:
+      - test/tts-supertonic
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Supertonic
+        run: pip install --upgrade pip && pip install supertonic
+
+      - name: Generate Spanish sample
+        run: |
+          cat > /tmp/generate_tts.py <<'PY'
+          from pathlib import Path
+          import numpy as np
+          from scipy.io.wavfile import write
+          from supertonic import TTS
+
+          text = '''Vale, venga. Tema 35. Y este es de los que al principio parecen una colección de palabras rarísimas, pero en cuanto entiendes cómo funciona el equipo, todo empieza a encajar. La ecografía utiliza ondas mecánicas y los transductores son los encargados de generarlas y recibirlas. El efecto piezoeléctrico permite transformar energía eléctrica en vibración mecánica y, a la inversa, convertir los ecos recibidos en señal eléctrica. A partir de ahí entran en juego conceptos como frecuencia, longitud de onda, amplitud, potencia, intensidad, impedancia acústica y reflexión. Y sí, parece mucha teoría, pero la idea es bastante lógica: mandamos una onda, esperamos a que vuelva, medimos lo que ha pasado y construimos la imagen.'''
+
+          tts = TTS(auto_download=True)
+          style = tts.get_voice_style(voice_name='F1')
+          wav, duration = tts.synthesize(
+              text=text,
+              lang='es',
+              voice_style=style,
+              total_steps=10,
+              speed=1.0,
+          )
+          audio = np.asarray(wav[0], dtype=np.float32)
+          audio = np.clip(audio, -1.0, 1.0)
+          write('/tmp/tema35-supertonic-f1.wav', 44100, (audio * 32767).astype(np.int16))
+          print('duration_seconds=', float(duration[0]))
+          PY
+          python /tmp/generate_tts.py
+          ffmpeg -y -i /tmp/tema35-supertonic-f1.wav -codec:a libmp3lame -q:a 3 /tmp/tema35-supertonic-f1.mp3
+
+      - name: Upload sample
+        uses: actions/upload-artifact@v4
+        with:
+          name: tema35-supertonic-f1
+          path: /tmp/tema35-supertonic-f1.mp3
+          retention-days: 7
