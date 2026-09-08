@@ -21,6 +21,9 @@ jobs:
       - name: Install Supertonic
         run: pip install --upgrade pip && pip install supertonic scipy
 
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
       - name: Generate Spanish sample
         run: |
           cat > /tmp/generate_tts.py <<'PY'
@@ -46,10 +49,6 @@ jobs:
           print('duration_seconds=', float(duration[0]))
           PY
           python /tmp/generate_tts.py
-          python - <<'PY'
-          import subprocess
-          subprocess.run(['ffmpeg', '-version'], check=True)
-          PY
           ffmpeg -y -i /tmp/tema35-supertonic-f1.wav -codec:a libmp3lame -q:a 3 /tmp/tema35-supertonic-f1.mp3
 
       - name: Upload sample
