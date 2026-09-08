@@ -24,18 +24,31 @@ jobs:
       - name: Install FFmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      - name: Generate Spanish samples
+      - name: Generate Spanish conversation F3 M2
         run: |
           cat > /tmp/generate_tts.py <<'PY'
           import numpy as np
           from scipy.io.wavfile import write
           from supertonic import TTS
 
-          text = '''Vale, venga. Tema 35. Y este es de los que al principio parecen una colección de palabras rarísimas, pero en cuanto entiendes cómo funciona el equipo, todo empieza a encajar. La ecografía utiliza ondas mecánicas y los transductores son los encargados de generarlas y recibirlas. El efecto piezoeléctrico permite transformar energía eléctrica en vibración mecánica y, a la inversa, convertir los ecos recibidos en señal eléctrica. A partir de ahí entran en juego conceptos como frecuencia, longitud de onda, amplitud, potencia, intensidad, impedancia acústica y reflexión. Y sí, parece mucha teoría, pero la idea es bastante lógica: mandamos una onda, esperamos a que vuelva, medimos lo que ha pasado y construimos la imagen.'''
+          turns = [
+              ('F3', 'A ver, vamos a hacerlo fácil. La ecografía utiliza ondas mecánicas para obtener la imagen.'),
+              ('M2', 'Vale, o sea que el equipo manda una onda y después recoge el eco que vuelve.'),
+              ('F3', 'Exacto. Y aquí los protagonistas son los transductores, porque son los que generan las ondas y también reciben los ecos.'),
+              ('M2', '¿Y eso es lo del efecto piezoeléctrico?'),
+              ('F3', 'Sí. El efecto piezoeléctrico permite transformar la energía eléctrica en vibración mecánica y, al contrario, convertir los ecos recibidos en señal eléctrica.'),
+              ('M2', 'Entonces la frecuencia, la longitud de onda y la impedancia acústica también son importantes para formar la imagen.'),
+              ('F3', 'Muchísimo. Pero quédate con la idea básica: enviamos una onda, esperamos a que vuelva, analizamos lo que ha ocurrido y con esa información construimos la imagen.'),
+              ('M2', 'Así explicado parece bastante menos terrible que cuando te encuentras todos los conceptos juntos.'),
+              ('F3', 'Esa es la idea. Entender primero la lógica y después ya nos ponemos con la teoría y los detalles que pueden preguntarnos en el examen.'),
+          ]
 
           tts = TTS(auto_download=True)
+          chunks = []
+          sample_rate = 44100
+          pause = np.zeros(int(sample_rate * 0.28), dtype=np.float32)
 
-          for voice, label in (('F2', 'f2'), ('M1', 'm1')):
+          for voice, text in turns:
               style = tts.get_voice_style(voice_name=voice)
               wav, duration = tts.synthesize(
                   text=text,
@@ -46,17 +59,19 @@ jobs:
               )
               audio = np.asarray(wav[0], dtype=np.float32)
               audio = np.clip(audio, -1.0, 1.0)
-              stem = f'/tmp/tema35-supertonic-{label}-125'
-              write(stem + '.wav', 44100, (audio * 32767).astype(np.int16))
+              chunks.append(audio)
+              chunks.append(pause)
               print(f'voice={voice} speed=1.25 duration_seconds=', float(duration[0]))
+
+          conversation = np.concatenate(chunks)
+          write('/tmp/tema35-supertonic-f3-m2-125-conversation.wav', sample_rate, (conversation * 32767).astype(np.int16))
           PY
           python /tmp/generate_tts.py
-          ffmpeg -y -i /tmp/tema35-supertonic-f2-125.wav -codec:a libmp3lame -q:a 3 /tmp/tema35-supertonic-f2-125.mp3
-          ffmpeg -y -i /tmp/tema35-supertonic-m1-125.wav -codec:a libmp3lame -q:a 3 /tmp/tema35-supertonic-m1-125.mp3
+          ffmpeg -y -i /tmp/tema35-supertonic-f3-m2-125-conversation.wav -codec:a libmp3lame -q:a 3 /tmp/tema35-supertonic-f3-m2-125-conversation.mp3
 
-      - name: Upload samples
+      - name: Upload conversation sample
         uses: actions/upload-artifact@v4
         with:
-          name: tema35-supertonic-f2-m1-125
-          path: /tmp/tema35-supertonic-*-125.mp3
+          name: tema35-supertonic-f3-m2-125-conversation
+          path: /tmp/tema35-supertonic-f3-m2-125-conversation.mp3
           retention-days: 7
