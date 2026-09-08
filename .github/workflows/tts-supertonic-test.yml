@@ -24,7 +24,7 @@ jobs:
       - name: Install FFmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      - name: Generate Spanish conversation F3 M2
+      - name: Generate Spanish conversation F1 M1
         run: |
           cat > /tmp/generate_tts.py <<'PY'
           import numpy as np
@@ -32,15 +32,15 @@ jobs:
           from supertonic import TTS
 
           turns = [
-              ('F3', 'A ver, vamos a hacerlo fácil. La ecografía utiliza ondas mecánicas para obtener la imagen.'),
-              ('M2', 'Vale, o sea que el equipo manda una onda y después recoge el eco que vuelve.'),
-              ('F3', 'Exacto. Y aquí los protagonistas son los transductores, porque son los que generan las ondas y también reciben los ecos.'),
-              ('M2', '¿Y eso es lo del efecto piezoeléctrico?'),
-              ('F3', 'Sí. El efecto piezoeléctrico permite transformar la energía eléctrica en vibración mecánica y, al contrario, convertir los ecos recibidos en señal eléctrica.'),
-              ('M2', 'Entonces la frecuencia, la longitud de onda y la impedancia acústica también son importantes para formar la imagen.'),
-              ('F3', 'Muchísimo. Pero quédate con la idea básica: enviamos una onda, esperamos a que vuelva, analizamos lo que ha ocurrido y con esa información construimos la imagen.'),
-              ('M2', 'Así explicado parece bastante menos terrible que cuando te encuentras todos los conceptos juntos.'),
-              ('F3', 'Esa es la idea. Entender primero la lógica y después ya nos ponemos con la teoría y los detalles que pueden preguntarnos en el examen.'),
+              ('F1', 'A ver, vamos a hacerlo fácil. La ecografía utiliza ondas mecánicas para obtener la imagen.'),
+              ('M1', 'Vale, o sea que el equipo manda una onda y después recoge el eco que vuelve.'),
+              ('F1', 'Exacto. Y aquí los protagonistas son los transductores, porque son los que generan las ondas y también reciben los ecos.'),
+              ('M1', '¿Y eso es lo del efecto piezoeléctrico?'),
+              ('F1', 'Sí. El efecto piezoeléctrico permite transformar la energía eléctrica en vibración mecánica y, al contrario, convertir los ecos recibidos en señal eléctrica.'),
+              ('M1', 'Entonces la frecuencia, la longitud de onda y la impedancia acústica también son importantes para formar la imagen.'),
+              ('F1', 'Muchísimo. Pero quédate con la idea básica: enviamos una onda, esperamos a que vuelva, analizamos lo que ha ocurrido y con esa información construimos la imagen.'),
+              ('M1', 'Así explicado parece bastante menos terrible que cuando te encuentras todos los conceptos juntos.'),
+              ('F1', 'Esa es la idea. Entender primero la lógica y después ya nos ponemos con la teoría y los detalles que pueden preguntarnos en el examen.'),
           ]
 
           tts = TTS(auto_download=True)
@@ -64,14 +64,14 @@ jobs:
               print(f'voice={voice} speed=1.25 duration_seconds=', float(duration[0]))
 
           conversation = np.concatenate(chunks)
-          write('/tmp/tema35-supertonic-f3-m2-125-conversation.wav', sample_rate, (conversation * 32767).astype(np.int16))
+          write('/tmp/tema35-supertonic-f1-m1-125-conversation.wav', sample_rate, (conversation * 32767).astype(np.int16))
           PY
           python /tmp/generate_tts.py
-          ffmpeg -y -i /tmp/tema35-supertonic-f3-m2-125-conversation.wav -codec:a libmp3lame -q:a 3 /tmp/tema35-supertonic-f3-m2-125-conversation.mp3
+          ffmpeg -y -i /tmp/tema35-supertonic-f1-m1-125-conversation.wav -codec:a libmp3lame -q:a 3 /tmp/tema35-supertonic-f1-m1-125-conversation.mp3
 
       - name: Upload conversation sample
         uses: actions/upload-artifact@v4
         with:
-          name: tema35-supertonic-f3-m2-125-conversation
-          path: /tmp/tema35-supertonic-f3-m2-125-conversation.mp3
+          name: tema35-supertonic-f1-m1-125-conversation
+          path: /tmp/tema35-supertonic-f1-m1-125-conversation.mp3
           retention-days: 7
