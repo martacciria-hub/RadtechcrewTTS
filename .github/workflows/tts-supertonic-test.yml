@@ -27,7 +27,6 @@ jobs:
       - name: Generate Spanish samples
         run: |
           cat > /tmp/generate_tts.py <<'PY'
-          from pathlib import Path
           import numpy as np
           from scipy.io.wavfile import write
           from supertonic import TTS
@@ -37,7 +36,7 @@ jobs:
           tts = TTS(auto_download=True)
           style = tts.get_voice_style(voice_name='F1')
 
-          for speed in (1.25, 1.30):
+          for speed, label in ((1.25, '125'), (1.30, '130')):
               wav, duration = tts.synthesize(
                   text=text,
                   lang='es',
@@ -47,7 +46,7 @@ jobs:
               )
               audio = np.asarray(wav[0], dtype=np.float32)
               audio = np.clip(audio, -1.0, 1.0)
-              stem = f'/tmp/tema35-supertonic-f1-{str(speed).replace(".", "")}'
+              stem = f'/tmp/tema35-supertonic-f1-{label}'
               write(stem + '.wav', 44100, (audio * 32767).astype(np.int16))
               print(f'speed={speed} duration_seconds=', float(duration[0]))
           PY
