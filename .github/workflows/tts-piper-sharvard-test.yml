@@ -1,0 +1,78 @@
+name: TTS Piper Sharvard test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Piper
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install piper-tts
+
+      - name: Download Sharvard es_ES voice
+        run: |
+          mkdir -p /tmp/piper
+          curl -L --fail --retry 3 -o /tmp/piper/es_ES-sharvard-medium.onnx \
+            https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/sharvard/medium/es_ES-sharvard-medium.onnx
+          curl -L --fail --retry 3 -o /tmp/piper/es_ES-sharvard-medium.onnx.json \
+            https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/sharvard/medium/es_ES-sharvard-medium.onnx.json
+
+      - name: Generate female and male dialogue
+        run: |
+          cat > /tmp/generate_dialogue.py <<'PY'
+          import subprocess
+          from pathlib import Path
+
+          model = '/tmp/piper/es_ES-sharvard-medium.onnx'
+          out = Path('/tmp/piper_dialogue')
+          out.mkdir(exist_ok=True)
+
+          dialogue = [
+              (1, 'Vale, David, vamos a comprobar una cosa. En una radiografía de pelvis, ¿qué proyección utilizamos como básica?'),
+              (0, 'La anteroposterior, ¿no?'),
+              (1, 'Exacto. Y ahora viene la pregunta con mala leche: si queremos estudiar específicamente una estructura mediante una proyección axial, ¿qué cambia respecto a la AP?'),
+              (0, 'La dirección del haz y la relación entre el paciente y el receptor.'),
+              (1, 'Bien. Eso es lo importante: no memorizar solo el nombre de la proyección, sino entender posición, dirección del haz y estructura que queremos demostrar.'),
+          ]
+
+          files = []
+          for i, (speaker, text) in enumerate(dialogue):
+              wav = out / f'{i:02d}.wav'
+              subprocess.run([
+                  'piper',
+                  '--model', model,
+                  '--speaker', str(speaker),
+                  '--output_file', str(wav),
+              ], input=text, text=True, check=True)
+              files.append(wav)
+
+          concat = out / 'concat.txt'
+          with concat.open('w', encoding='utf-8') as f:
+              for wav in files:
+                  f.write(f"file '{wav}'\n")
+
+          subprocess.run([
+              'ffmpeg', '-y', '-f', 'concat', '-safe', '0',
+              '-i', str(concat), '-c:a', 'libmp3lame', '-q:a', '3',
+              '/tmp/tema35-piper-sharvard-dialogue.mp3'
+          ], check=True)
+          PY
+          python /tmp/generate_dialogue.py
+
+      - name: Upload MP3
+        uses: actions/upload-artifact@v4
+        with:
+          name: tema35-piper-sharvard-dialogue
+          path: /tmp/tema35-piper-sharvard-dialogue.mp3
+          retention-days: 7
