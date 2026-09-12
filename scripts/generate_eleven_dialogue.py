@@ -27,8 +27,10 @@ def api_get(path, params=None):
         return json.loads(r.read().decode("utf-8"))
 
 
-def api_post(path, payload):
+def api_post(path, payload, params=None):
     url = API_BASE + path
+    if params:
+        url += "?" + urllib.parse.urlencode(params)
     body = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(
         url,
@@ -113,11 +115,14 @@ def main():
                 for speaker, text in chunk
             ],
             "model_id": MODEL_ID,
-            "output_format": OUTPUT_FORMAT,
             "language_code": "es",
         }
         print(f"Generando bloque {i}/{len(chunks)} ({sum(len(t) for _, t in chunk)} caracteres)...")
-        audio = api_post("/v1/text-to-dialogue", payload)
+        audio = api_post(
+            "/v1/text-to-dialogue",
+            payload,
+            {"output_format": OUTPUT_FORMAT},
+        )
         part = temp_dir / f"part-{i:03d}.mp3"
         part.write_bytes(audio)
         parts.append(part)
