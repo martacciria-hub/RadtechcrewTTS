@@ -1,0 +1,8 @@
+# Prueba Sofia + Tony — diálogo corto
+SOFIA|Vale, entonces una cosa importante: ¿para qué utilizamos principalmente la ecografía en el estudio de la mama?
+TONY|Para complementar la mamografía, ¿no?
+SOFIA|Exacto. Sobre todo nos ayuda a caracterizar lesiones y a diferenciar, por ejemplo, una masa quística de una sólida.
+TONY|O sea, que no sustituye necesariamente a la mamografía.
+SOFIA|Eso es. Son técnicas complementarias. Y además la ecografía tiene otra función muy importante: sirve como guía para realizar procedimientos intervencionistas.
+TONY|Vale, esa me la apunto. Mamografía más ecografía, cada una con su función.
+SOFIA|Exactamente. Así es mucho más fácil de recordar.
