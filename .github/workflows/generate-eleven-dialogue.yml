@@ -1,0 +1,30 @@
+name: Generar diálogo ElevenLabs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Generar MP3 con ElevenLabs v3
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          SOFIA_VOICE_NAME: Sofia - Natural Conversations
+          TONY_VOICE_NAME: Tony - Expressive, Fast and Spontaneous
+        run: |
+          python scripts/generate_eleven_dialogue.py dialogue.txt sofia-tony.mp3
+
+      - name: Guardar MP3 como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: sofia-tony-dialogue
+          path: sofia-tony.mp3
+          if-no-files-found: error
+          retention-days: 7
