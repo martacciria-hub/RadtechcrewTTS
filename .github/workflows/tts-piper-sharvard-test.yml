@@ -1,6 +1,9 @@
 name: TTS Piper Sharvard test
 
 on:
+  push:
+    paths:
+      - '.github/workflows/tts-piper-sharvard-test.yml'
   workflow_dispatch:
 
 jobs:
