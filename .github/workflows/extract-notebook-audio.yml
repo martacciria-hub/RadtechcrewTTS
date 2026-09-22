@@ -1,0 +1,27 @@
+name: Extract NotebookLM test audio
+
+on:
+  push:
+    paths:
+      - "tests/screen-20260922-194114.mp4"
+      - ".github/workflows/extract-notebook-audio.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract audio and inspect
+        run: |
+          mkdir -p output
+          ffprobe -v error -show_format -show_streams -of json tests/screen-20260922-194114.mp4 > output/ffprobe.json
+          ffmpeg -y -i tests/screen-20260922-194114.mp4 -vn -acodec aac -b:a 192k output/notebooklm-audio.m4a
+      - name: Upload extracted audio
+        uses: actions/upload-artifact@v4
+        with:
+          name: notebooklm-audio
+          path: output/
+          retention-days: 7
